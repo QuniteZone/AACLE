@@ -8,6 +8,15 @@ from autogen.coding import LocalCommandLineCodeExecutor, DockerCommandLineCodeEx
 class AutoGen():
     def __init__(self, model_file, work_dir):
         "指定设定调用的LLM，保存目录"
+        self.ModelAgent = None #1.ModelAgent：分析问题并生成数学建模描述。
+        self.AlgorithmSelectorAgent = None #2.AlgorithmSelectorAgent：根据问题类型建议适用的算法和数据结构。
+        self.PseudocodeDesignerAgent = None #3.PseudocodeDesignerAgent：根据算法选择，编写对应的伪代码。
+        self.VerificationAgent = None #4.VerificationAgent：验证伪代码的正确性，通过数学推导或逻辑推理确保算法逻辑无误。
+        self.ComplexityAnalyzerAgent = None #5.ComplexityAnalyzerAgent：分析算法的时间复杂度和空间复杂度，并提供优化建议。
+        self.CodeExecutorAgent = None #6.CodeExecutorAgent：根据伪代码编写Python程序
+        self.CodeWriteAgent= None #7.CodeWriteAgent：执行Python程序，并验证输出结果。
+        self.AssistantAgent = None #8.AssistantAgent：在前三个环节结束后，向环节主Agent提出针对性问题，同时问题需与具体环节内容紧密相关，并避免空泛提问。
+
         self.code_executor_agent = None
         self.code_writer_agent = None
         self.model_file = model_file
@@ -52,6 +61,7 @@ class AutoGen():
         with open(f"{self.work_dir}/task_{self.task_id}/{token_filename}", 'w') as f:
             f.write(str(chat_result.cost))
 
+
     def def_agent(self):
         # 创建一个Docker命令行代码执行器。
         executor = DockerCommandLineCodeExecutor(
@@ -88,9 +98,28 @@ class AutoGen():
         code_writer_agent = ConversableAgent(
             "code_writer_agent",
             system_message=code_writer_system_message,
-            llm_config={"config_list": [{"model": "gpt-3.5-turbo", "api_key": os.environ["OPENAI_API_KEY"]}]},
+            llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
             code_execution_config=False,  # 为此代理关闭代码执行.
         )
+
+        ##### 定义第一个agent智能体 ModelAgent，用于分析算法问题，并生产数学建模描述 ####
+        ModelAgent = ConversableAgent(
+            name="ModelAgent",
+            system_message="你是一个专门进行算法问题分析，并生成数学建模描述的代理",
+            llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
+        )
+
+        ##### 定义第二个agent智能体 AlgorithmSelectorAgent，根据问题建议出适用的算法和数据结构 ####
+        AlgorithmSelectorAgent = ConversableAgent(
+            name="AlgorithmSelectorAgent",
+            system_message="你是一个根据算法问题描述，来建议出解决该算法问题应该采取的合适算法和合适数据结构",
+            llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
+        )
+
+
+        #### 将各个代理用变量存储 ####
+        self.ModelAgent = ModelAgent
+        self.AlgorithmSelectorAgent = AlgorithmSelectorAgent
         self.code_executor_agent = code_executor_agent
         self.code_writer_agent = code_writer_agent
 
