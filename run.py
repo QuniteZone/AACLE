@@ -18,7 +18,8 @@ autogen = AutoGen(model_file=model, work_dir=output_filename)
 for task_id in task_list.keys():
     print(f"########################Task {task_id}: 开始解决！########################")
     try:
-        autogen.run(task_id, task_list[task_id])
+        result=autogen.run(task_id, task_list[task_id])
+        print(f'result:{result}')
     except Exception as e:
         print(f'    Task {task_id} 执行失败，错误信息：{e}')
         error_list.append(task_id)
