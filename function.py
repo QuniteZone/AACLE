@@ -22,8 +22,8 @@ class AutoGen():
         self.model_file = model_file
         self.work_dir = work_dir  # 保存目录
         self.task_id = None
-        os.environ["http_proxy"] = "http://localhost:7890"
-        os.environ["https_proxy"] = "http://localhost:7890"
+        # os.environ["http_proxy"] = "http://localhost:7890"
+        # os.environ["https_proxy"] = "http://localhost:7890"
         os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
 
     def run(self, task_id, task_description):

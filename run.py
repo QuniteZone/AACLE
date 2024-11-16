@@ -19,7 +19,8 @@ for task_id in task_list.keys():
     print(f"########################Task {task_id}: 开始解决！########################")
     try:
         autogen.run(task_id, task_list[task_id])
-    except:
+    except Exception as e:
+        print(f'    Task {task_id} 执行失败，错误信息：{e}')
         error_list.append(task_id)
 print(f"######################## 所有任务执行完毕！ ########################\n")
 print(f"执行失败的task_id有：{error_list}")
