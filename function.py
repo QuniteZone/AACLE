@@ -1,7 +1,7 @@
 import os
 import tempfile
+import autogen
 from autogen import ConversableAgent
-
 from autogen.coding import LocalCommandLineCodeExecutor, DockerCommandLineCodeExecutor
 
 class Base_Agent():
@@ -45,7 +45,12 @@ class Base_Agent():
             system_message=AlgorithmSelectorAgent_system_message,
             llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
         )
-
+        user_proxy = autogen.UserProxyAgent(
+            name="User_proxy",
+            system_message="你是用户代理，用于发起对话。",
+            human_input_mode="TERMINATE",
+            #关闭人类输入
+        )
         ##### 定义第三个agent智能体 PseudocodeDesignerAgent，根据算法选择，编写对应的伪代码 ####
 
         ##### 定义第四个agent智能体 VerificationAgent，验证伪代码的正确性，通过数学推导或逻辑推理确保算法逻辑无误 ####
@@ -67,39 +72,67 @@ class Base_Agent():
 class Problem_Model_Phase(Base_Agent):
     """问题建模阶段"""
 
-    def save_conversation(self, message):
-        """将对话内容保存到txt文件中"""
-        with open("conversation.txt", "a", encoding="utf-8") as file:
-            file.write(message + "\n")
+    def __init__(self, llm_config, max_round=12):
+        """初始化群聊代理和管理器"""
+        self.llm_config = llm_config
+        self.max_round = max_round
 
-    def phase_run(self, task_description):
-        """ModelAgent和AlgorithmSelectorAgent之间的交替对话"""
+        # 初始化代理
+        self.user_proxy = autogen.UserProxyAgent(
+            name="User_proxy",
+            system_message="你是用户，负责描述问题。",
+            human_input_mode="TERMINATE",
+        )
+        self.model_agent = autogen.AssistantAgent(
+            name="ModelAgent",
+            system_message="你负责根据用户描述建立数学模型，用数学符号清晰表达模型。",
+            llm_config=llm_config,
+            is_termination_msg=lambda msg: "满意" in msg["content"],#如果检测到关键词“满意”，则终止对话
+        )
+        self.algorithm_selector_agent = autogen.AssistantAgent(
+            name="AlgorithmSelectorAgent",
+            system_message="你负责评估ModelAgent提出的数学模型是否合理，并给出改进建议，如果你感觉模型合理，请回答“满意”。",
+            llm_config=llm_config,
+        )
 
-        # 定义一个参数衡量模型是否满意，并作为跳出循环的条件
-        self.is_satisfactory = False
+        # 初始化群聊
+        self.groupchat = autogen.GroupChat(
+            agents=[self.user_proxy, self.model_agent, self.algorithm_selector_agent],
+            messages=[],
+            max_round=max_round,
+        )
+    #定义函数，选择发言顺序
+    def turn_select(self,last_speaker,groupchat):
 
-        # 1. 初始ModelAgent根据任务描述进行数学建模
-        prompt_model = f"请根据以下任务描述使用数学符号进行数学建模分析：{task_description}"
-        model_response = self.ModelAgent.initiate_chat(None, message=prompt_model)
-        self.save_conversation(f"ModelAgent的建模分析结果: {model_response}")
 
-        while not self.is_satisfactory:#（通过2和3循环来完成对话）
-            # 2. AlgorithmSelectorAgent根据ModelAgent的建模结果提供反馈
-            # 明确告诉AlgorithmSelectorAgent，如果满意，请回复“满意”
-            prompt_algorithm = f"ModelAgent的建模分析结果如下：{model_response}. 请根据此结果，提供是否有优化建议，如果有不理解的地方请指出，或者如果认为建模合适并且没有不理解的地方，请回答“满意”。"
-            algorithm_response = self.AlgorithmSelectorAgent.initiate_chat(None, message=prompt_algorithm)
-            self.save_conversation(f"AlgorithmSelectorAgent的反馈: {algorithm_response}")
+        if last_speaker is self.model_agent:
+            return self.algorithm_selector_agent
 
-            # 3. 将AlgorithmSelectorAgent的建议和当前model_response一起传递给ModelAgent来更新建模描述
-            if "满意" in algorithm_response:
-                self.is_satisfactory = True
-                self.save_conversation("建模描述已满意，结束优化。")
-            else:
-                # 否则，将AlgorithmSelectorAgent的反馈和当前的建模结果一起传递给ModelAgent来更新建模
-                combined_input = f"ModelAgent，以下是根据您的建模分析结果：{model_response}，以及AlgorithmSelectorAgent的反馈：{algorithm_response}。请根据这些信息更新并完善数学建模描述，如果AlgorithmSelectorAgent有不理解的地方请给出解释。"
-                model_response = self.ModelAgent.initiate_chat(None, message=combined_input)
-                self.save_conversation(f"ModelAgent根据反馈更新后的建模分析结果: {model_response}")
-                task_description = f"根据以下建议优化建模描述：{algorithm_response}"  # 更新任务描述
+        else:
+            return self.model_agent
+
+        #三种情况：如果上一个发言者是model_agent，则下一个让algorithm_selector_agent发言
+        #如果上一个发言者是user_proxy，则下一个让model_agent发言
+        #如果上一个发言者是user_proxy，则下一个让model_agent发言
+        #后两个情况合并在一起
+
+
+
+    def phase_run(self,task_description):
+        groupchat = autogen.GroupChat(agents=[self.user_proxy, self.model_agent, self.algorithm_selector_agent], messages=[], max_round=12,speaker_selection_method=self.turn_select,)
+        manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=self.llm_config)
+
+        self.user_proxy.initiate_chat(
+            manager, message=f"根据以下描述使用数学符号建立数学模型：{task_description}"
+        )
+
+        #倒叙遍历对话记录，返回ModelAgent的最后一次输出，则为最佳建模
+        for msg in reversed(groupchat.messages):
+            if msg["sender"] == "ModelAgent":
+                return msg["content"]
+
+
+
 
 class Algorithm_Selection_Phase(Base_Agent):
     """算法选择阶段"""
