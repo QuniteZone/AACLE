@@ -39,7 +39,7 @@ class Base_Agent():
 
 
         ##### 定义第二个agent智能体 AlgorithmSelectorAgent，根据问题建议出适用的算法和数据结构 ####
-        AlgorithmSelectorAgent_system_message = "你是一个根据算法问题描述，来建议出解决该算法问题应该采取的合适算法和合适数据结构"
+        AlgorithmSelectorAgent_system_message = "你是一个根据算法问题描述，来建议出解决该算法问题应该采取的合适算法和合适数据结构的代理"
         AlgorithmSelectorAgent = ConversableAgent(
             name="AlgorithmSelectorAgent",
             system_message=AlgorithmSelectorAgent_system_message,
@@ -66,14 +66,44 @@ class Base_Agent():
 
 class Problem_Model_Phase(Base_Agent):
     """问题建模阶段"""
-    def phase_run(self):
-        pass
 
+    def save_conversation(self, message):
+        """将对话内容保存到txt文件中"""
+        with open("conversation.txt", "a", encoding="utf-8") as file:
+            file.write(message + "\n")
+
+    def phase_run(self, task_description):
+        """ModelAgent和AlgorithmSelectorAgent之间的交替对话"""
+
+        # 定义一个参数衡量模型是否满意，并作为跳出循环的条件
+        self.is_satisfactory = False
+
+        # 1. 初始ModelAgent根据任务描述进行数学建模
+        prompt_model = f"请根据以下任务描述使用数学符号进行数学建模分析：{task_description}"
+        model_response = self.ModelAgent.initiate_chat(None, message=prompt_model)
+        self.save_conversation(f"ModelAgent的建模分析结果: {model_response}")
+
+        while not self.is_satisfactory:#（通过2和3循环来完成对话）
+            # 2. AlgorithmSelectorAgent根据ModelAgent的建模结果提供反馈
+            # 明确告诉AlgorithmSelectorAgent，如果满意，请回复“满意”
+            prompt_algorithm = f"ModelAgent的建模分析结果如下：{model_response}. 请根据此结果，提供是否有优化建议，如果有不理解的地方请指出，或者如果认为建模合适并且没有不理解的地方，请回答“满意”。"
+            algorithm_response = self.AlgorithmSelectorAgent.initiate_chat(None, message=prompt_algorithm)
+            self.save_conversation(f"AlgorithmSelectorAgent的反馈: {algorithm_response}")
+
+            # 3. 将AlgorithmSelectorAgent的建议和当前model_response一起传递给ModelAgent来更新建模描述
+            if "满意" in algorithm_response:
+                self.is_satisfactory = True
+                self.save_conversation("建模描述已满意，结束优化。")
+            else:
+                # 否则，将AlgorithmSelectorAgent的反馈和当前的建模结果一起传递给ModelAgent来更新建模
+                combined_input = f"ModelAgent，以下是根据您的建模分析结果：{model_response}，以及AlgorithmSelectorAgent的反馈：{algorithm_response}。请根据这些信息更新并完善数学建模描述，如果AlgorithmSelectorAgent有不理解的地方请给出解释。"
+                model_response = self.ModelAgent.initiate_chat(None, message=combined_input)
+                self.save_conversation(f"ModelAgent根据反馈更新后的建模分析结果: {model_response}")
+                task_description = f"根据以下建议优化建模描述：{algorithm_response}"  # 更新任务描述
 
 class Algorithm_Selection_Phase(Base_Agent):
     """算法选择阶段"""
-    def phase_run(self):
-        pass
+
 
 
 class Algorithm_Design_Phase(Base_Agent):
@@ -117,14 +147,13 @@ class AutoGen():
     def run(self, task_id, task_description):
         self.task_id = task_id  # 保存任务id
         ######################## 注意注意 前三个环节增加了智能体Agent自问自答环节 #######################
-
+        self.is_satisfactory=False
         ####问题建模阶段
         self.Problem_Model_Phase.phase_run()
-        #该环节输出，作为下一阶段的输入！
+        # 该环节输出，作为下一阶段的输入！
 
         ####算法选择阶段
         self.Algorithm_Selection_Phase.phase_run()
-        # 该环节输出，作为下一阶段的输入！
 
         ####算法设计阶段
         self.Algorithm_Design_Phase.phase_run()
