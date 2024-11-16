@@ -30,17 +30,19 @@ class Base_Agent():
         """
 
         ##### 定义第一个agent智能体 ModelAgent，用于分析算法问题，并生产数学建模描述 ####
+        ModelAgent_system_message = "你是一个专门进行算法问题分析，并生成数学建模描述的代理"
         ModelAgent = ConversableAgent(
             name="ModelAgent",
-            system_message="你是一个专门进行算法问题分析，并生成数学建模描述的代理",
+            system_message=ModelAgent_system_message,
             llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
         )
 
 
         ##### 定义第二个agent智能体 AlgorithmSelectorAgent，根据问题建议出适用的算法和数据结构 ####
+        AlgorithmSelectorAgent_system_message = "你是一个根据算法问题描述，来建议出解决该算法问题应该采取的合适算法和合适数据结构"
         AlgorithmSelectorAgent = ConversableAgent(
             name="AlgorithmSelectorAgent",
-            system_message="你是一个根据算法问题描述，来建议出解决该算法问题应该采取的合适算法和合适数据结构",
+            system_message=AlgorithmSelectorAgent_system_message,
             llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
         )
 
