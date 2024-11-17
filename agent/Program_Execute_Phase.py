@@ -2,11 +2,10 @@ import os
 
 from autogen import ConversableAgent
 from autogen.coding import DockerCommandLineCodeExecutor
+from agent.Base_Agent import Base_Agent
 
-from function import Base_Agent
 
-
-class ProgramExecutePhase(Base_Agent):
+class Program_Execute_Phase(Base_Agent):
     """代码执行阶段"""
 
     def __init__(self, model_file, work_dir):
@@ -16,7 +15,8 @@ class ProgramExecutePhase(Base_Agent):
         executor = DockerCommandLineCodeExecutor(
             image="python_self3.9:3.9.20",  # 使用给定的docker镜像名称执行代码。
             timeout=10,  # 每次代码执行的超时时间（秒）。
-            work_dir=f"../{self.work_dir}/code_result"  # 使用指定目录存储代码文件
+            work_dir=f"{self.work_dir}/code_result",  # 使用指定目录存储代码文件
+            # bind_dir=
         )
 
         # 创建一个带有代码执行器配置的代理.
@@ -97,5 +97,5 @@ function swap(a, b)
 end function
 """
 
-program_execute_phase = ProgramExecutePhase("gpt-3.5-turbo", "output_Files")
-program_execute_phase.phase_run(input)
+# program_execute_phase = Program_Execute_Phase("gpt-3.5-turbo", "output_Files")
+# program_execute_phase.phase_run(input)

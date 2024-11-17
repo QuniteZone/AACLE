@@ -1,7 +1,7 @@
 import os
 from typing import TypedDict
 from autogen import ConversableAgent
-from function import Base_Agent
+from agent.Base_Agent import Base_Agent
 from utils import exact_json_from_text
 
 
@@ -10,7 +10,7 @@ class CorrectnessResult(TypedDict):
     space_complexity: str
 
 
-class ComplexityAnalysisPhase(Base_Agent):
+class Complexity_Analysis_Phase(Base_Agent):
     """复杂度分析阶段"""
 
     def __init__(self, model_file, work_dir):

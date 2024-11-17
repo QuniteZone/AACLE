@@ -1,24 +1,42 @@
 ##这是“利用LLM实现算法自动构建与学习增强”项目主程序
 import os
-from function import AutoGen
+from utils import get_project_root, Check_file_exists
+from conf import model, output_filename, need_dataset_filename
+from conf import question_id_list,question_desc,question_input_format,question_output_format,question_input_desc,question_output_desc,question_output_example,question_input_example
+import sys
+sys.path.append("..")
+sys.path.append("../..")
 
-task_list = {
-    "1": "加载鸢尾花数据集（Iris dataset），并基于这个数据完成对应任务。最后绘制出在数据集上模型达到的预测效果图，建议构建混淆矩阵图。",
-    "2": "加载葡萄酒识别数据集（Wine recognition dataset），并基于这个数据完成对应任务。最后绘制出在数据集上模型达到的预测效果图，建议利用混淆矩阵实现。这个任务要求对数据划分80%作为测试集，20%作为测试集，另外最后评估指标选择用accuracy。"
-}
 
-output_filename = "output_Files"  # 保存的文件目录名
-model = "gpt-3.5-turbo"
-api_key = "sk-Oq5AQr83cGogeQ0TXzdN7uEcI7PwhBNQ0YQ8woWECLLQ406C"
-os.environ["OPENAI_API_KEY"] = api_key
+####################### 以下为配置信息，请根据需要修改 ##############
 
+tasks_list={}
+for question_id in question_id_list: #遍历所有问题，构造问题列表基本配置
+    question_message={}
+    question_message['question_desc']=question_desc[question_id]
+    question_message['question_input_format']=question_input_format[question_id]
+    question_message['question_output_format']=question_output_format[question_id]
+    question_message['question_input_desc']=question_input_desc[question_id]
+    question_message['question_output_desc']=question_output_desc[question_id]
+    question_message['question_output_example']=question_output_example[question_id]
+    question_message['question_input_example']=question_input_example[question_id]
+    tasks_list[question_id]=question_message
+
+Check_file_exists(output_filename) #检查文件是否存在
+Check_file_exists(need_dataset_filename)  #检查文件是否存在
+
+
+
+####################### 以下为AutoLearning主程序调用 ##############
+from self_AutoGen import AutoLearning
 error_list = []  # 记录错误的task_id
-autogen = AutoGen(model_file=model, work_dir=output_filename)
+autogen = AutoLearning(model_file=model, work_dir=output_filename,bind_dir=need_dataset_filename) #初始化AutoLearning
 
-for task_id in task_list.keys():
+for task_id in tasks_list.keys():
     print(f"########################Task {task_id}: 开始解决！########################")
     try:
-        result=autogen.run(task_id, task_list[task_id])
+        print(f"tasks_list[task_id]:{tasks_list[task_id]}")
+        result=autogen.run(task_id, tasks_list[task_id])
         print(f'result:{result}')
     except Exception as e:
         print(f'    Task {task_id} 执行失败，错误信息：{e}')

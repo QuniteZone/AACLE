@@ -1,4 +1,4 @@
-from function import Complexity_Analysis_Phase
+from self_AutoGen import Complexity_Analysis_Phase
 import os
 
 api_key = "sk-Oq5AQr83cGogeQ0TXzdN7uEcI7PwhBNQ0YQ8woWECLLQ406C"

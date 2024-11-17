@@ -1,1 +1,0 @@
-{'usage_including_cached_inference': {'total_cost': 0.0023135, 'gpt-3.5-turbo-0125': {'cost': 0.0023135, 'prompt_tokens': 3169, 'completion_tokens': 486, 'total_tokens': 3655}}, 'usage_excluding_cached_inference': {'total_cost': 0.0013255, 'gpt-3.5-turbo-0125': {'cost': 0.0013255, 'prompt_tokens': 2441, 'completion_tokens': 70, 'total_tokens': 2511}}}
