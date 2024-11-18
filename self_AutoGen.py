@@ -37,7 +37,7 @@ class AutoLearning():
         ######################## 注意注意 前三个环节增加了智能体Agent自问自答环节 #######################
         self.is_satisfactory=False
         ####问题建模阶段
-        self.Problem_Model_Phase.phase_run(task_description)
+        self.Problem_Model_Phase.phase_run(task_id)
         # 该环节输出，作为下一阶段的输入！
 
         ####算法选择阶段
