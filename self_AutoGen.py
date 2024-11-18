@@ -17,27 +17,28 @@ sys.path.append("../../../..")
 
 
 
-
-
 class AutoLearning():
-    def __init__(self, model_file, work_dir,bind_dir):
+    def __init__(self, model_file,temperature, work_dir,bind_dir):
         self.bind_dir=bind_dir #绑定所需本地数据的目录，有需要自己拉去
-        self.Problem_Model_Phase = Problem_Model_Phase(model_file, work_dir)  #创建问题建模阶段对象
-        self.Algorithm_Selection_Phase = Algorithm_Selection_Phase(model_file, work_dir) #创建算法选择阶段对象
-        self.Algorithm_Design_Phase = Algorithm_Design_Phase(model_file, work_dir) #创建算法设计阶段对象
-        self.Correctness_Verification_Phase = Correctness_Verification_Phase(model_file, work_dir) #创建正确性验证阶段对象
-        self.Complexity_Analysis_Phase = Complexity_Analysis_Phase(model_file, work_dir) #创建复杂度分析阶段对象
-        self.Program_Execute_Phase = Program_Execute_Phase(model_file, work_dir) #创建代码执行阶段对象
+        self.Problem_Model_Phase = Problem_Model_Phase(model_file, temperature,work_dir)  #创建问题建模阶段对象
+        self.Algorithm_Selection_Phase = Algorithm_Selection_Phase(model_file, temperature,work_dir) #创建算法选择阶段对象
+        self.Algorithm_Design_Phase = Algorithm_Design_Phase(model_file,temperature, work_dir) #创建算法设计阶段对象
+        self.Correctness_Verification_Phase = Correctness_Verification_Phase(model_file,temperature,  work_dir) #创建正确性验证阶段对象
+        self.Complexity_Analysis_Phase = Complexity_Analysis_Phase(model_file,temperature, work_dir) #创建复杂度分析阶段对象
+        self.Program_Execute_Phase = Program_Execute_Phase(model_file,temperature,  work_dir) #创建代码执行阶段对象
         self.task_id = None  # 保存任务id
 
         pass
 
-    def run(self, task_id, task_description):
+    def run(self, task_id, task_message):
         self.task_id = task_id  # 保存任务id
         ######################## 注意注意 前三个环节增加了智能体Agent自问自答环节 #######################
         self.is_satisfactory=False
         ####问题建模阶段
-        self.Problem_Model_Phase.phase_run(task_id)
+        question_desc, key_question=self.Problem_Model_Phase.phase_run(task_id,task_message) #返回一个列表，第一个元素为最优建模，第二个元素为理解建模的应道问题
+        print(f"question_desc:{question_desc}")
+        print(f"key_question:{key_question}")
+
         # 该环节输出，作为下一阶段的输入！
 
         ####算法选择阶段
@@ -52,11 +53,11 @@ class AutoLearning():
         # 该环节输出，作为下一阶段的输入！
 
         ####复杂度分析阶段
-        self.Complexity_Analysis_Phase.phase_run()
-        # 该环节输出，作为下一阶段的输入！
-
-        ####代码执行阶段
-        self.Program_Execute_Phase.phase_run()
+        # self.Complexity_Analysis_Phase.phase_run()
+        # # 该环节输出，作为下一阶段的输入！
+        #
+        # ####代码执行阶段
+        # self.Program_Execute_Phase.phase_run()
 
 
 

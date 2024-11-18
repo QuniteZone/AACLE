@@ -13,8 +13,8 @@ class CorrectnessResult(TypedDict):
 class Complexity_Analysis_Phase(Base_Agent):
     """复杂度分析阶段"""
 
-    def __init__(self, model_file, work_dir):
-        super().__init__(model_file, work_dir)
+    def __init__(self, model_file,temperature,  work_dir):
+        super().__init__(model_file,temperature,  work_dir)
         # 创建一个Docker命令行代码执行器。
         self.result_json: CorrectnessResult
         self.user_agent = ConversableAgent(
