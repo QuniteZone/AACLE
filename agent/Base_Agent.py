@@ -1,8 +1,8 @@
 import os
 
 import autogen
-from autogen import ConversableAgent
-from conf import ModelAgent_system_message, AlgorithmSelectorAgent_system_message, AssistantAgent_system_message
+from autogen import ConversableAgent, ModelClient
+from conf import ModelAgent_system_message, AlgorithmSelectorAgent_system_message, AssistantAgent_system_message,ModelAgent_system_message_discussion,AlgorithmSelectorAgent_system_message_discussion,PseudocodeDesignerAgent_system_message,PseudocodeDesignerAgent_system_message_discussion
 
 
 class Base_Agent():
@@ -16,6 +16,10 @@ class Base_Agent():
         self.CodeExecutorAgent = None  # 6.CodeExecutorAgent：根据伪代码编写Python程序
         self.CodeWriteAgent = None  # 7.CodeWriteAgent：执行Python程序，并验证输出结果。
         self.AssistantAgent = None  # 8.AssistantAgent：在前三个环节结束后，向环节主Agent提出针对性问题，同时问题需与具体环节内容紧密相关，并避免空泛提问。
+
+        self.ModelAgent_discussion = None  # ModelAgent_discussion：作为一个用于参与讨论的ModelAgent
+        self.AlgorithmSelectorAgent_discussion = None  # AlgorithmSelectorAgent_discussion：作为一个用于参与讨论的AlgorithmSelectorAgent
+        self.PseudocodeDesignerAgent_discussion = None  # PseudocodeDesignerAgent_discussion：作为一个用于参与讨论的PseudocodeDesignerAgent
 
         self.code_executor_agent = None
         self.code_writer_agent = None
@@ -34,7 +38,7 @@ class Base_Agent():
         定义每个环节自己的代理
         """
 
-        ##### 定义第一个agent智能体 ModelAgent，用于分析算法问题，并生产数学建模描述 ####
+        ############################### 定义第一个agent智能体 ModelAgent，用于分析算法问题，并生产数学建模描述 ####
         self.ModelAgent = ConversableAgent(
             name="ModelAgent",
             system_message=ModelAgent_system_message,
@@ -44,17 +48,58 @@ class Base_Agent():
             # max_consecutive_auto_reply=2,#  # 代理连续两次自动回复后，将停止自动回复
         )
 
+        ##### 定义第二个agent智能体 ModelAgent_discussion，作为一个用于参与讨论的ModelAgent####
+        self.ModelAgent_discussion = ConversableAgent(
+            name="ModelAgent_discussion",
+            system_message=ModelAgent_system_message_discussion,
+            llm_config={"config_list": [{"model": self.model_file,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
+            # is_termination_msg=lambda msg: "terminate" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
+            # max_consecutive_auto_reply=2,#  # 代理连续两次自动回复后，将停止自动回复
+        )
 
-        ##### 定义第二个agent智能体 AlgorithmSelectorAgent，根据问题建议出适用的算法和数据结构 ####
+
+        ############################### 定义第二个agent智能体 AlgorithmSelectorAgent，根据问题建议出适用的算法和数据结构 ####
         self.AlgorithmSelectorAgent = ConversableAgent(
             name="AlgorithmSelectorAgent",
             system_message=AlgorithmSelectorAgent_system_message,
             llm_config={"config_list": [{"model": self.model_file,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
-            # is_termination_msg=lambda msg: "terminate" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
-            max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
+            is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
+            # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
         )
 
+        ##### 定义第二个agent智能体 AlgorithmSelectorAgent_discussion，作为一个用于参与讨论的AlgorithmSelectorAgent ####
+        self.AlgorithmSelectorAgent_discussion = ConversableAgent(
+            name="AlgorithmSelectorAgent_discussion",
+            system_message=AlgorithmSelectorAgent_system_message_discussion,
+            llm_config={"config_list": [
+                {"model": self.model_file, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
+            # is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
+            # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
+        )
+
+
+        ############################### 定义第三个agent智能体 PseudocodeDesignerAgent，根据算法选择，编写对应的伪代码。####
+        self.PseudocodeDesignerAgent = ConversableAgent(
+            name="PseudocodeDesignerAgent",
+            system_message=PseudocodeDesignerAgent_system_message,
+            llm_config={"config_list": [
+                {"model": self.model_file, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
+            # is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
+            # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
+        )
+
+        ##### 定义第三个agent智能体 PseudocodeDesignerAgent_discussion，作为一个用于参与讨论的PseudocodeDesignerAgent ####
+        self.PseudocodeDesignerAgent_discussion = ConversableAgent(
+            name="PseudocodeDesignerAgent_discussion",
+            system_message=PseudocodeDesignerAgent_system_message_discussion,
+            llm_config={"config_list": [
+                {"model": self.model_file, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
+        )
 
 
 
@@ -75,5 +120,6 @@ class Base_Agent():
             system_message=AssistantAgent_system_message,
             llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
-            max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
+            # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
+            is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
         )
