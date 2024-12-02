@@ -3,12 +3,12 @@ import tempfile
 import autogen
 from autogen import ConversableAgent
 from autogen.coding import LocalCommandLineCodeExecutor, DockerCommandLineCodeExecutor
-from agent.Problem_Model_Phase import Problem_Model_Phase
-from agent.Algorithm_Selection_Phase import Algorithm_Selection_Phase
-from agent.Algorithm_Design_Phase import Algorithm_Design_Phase
-from agent.Correctness_Verification_Phase import Correctness_Verification_Phase
-from agent.Complexity_Analysis_Phase import Complexity_Analysis_Phase
-from agent.Program_Execute_Phase import Program_Execute_Phase
+from AACLE.Agents.Problem_Model_Phase import Problem_Model_Phase
+from AACLE.Agents.Algorithm_Selection_Phase import Algorithm_Selection_Phase
+from AACLE.Agents.Algorithm_Design_Phase import Algorithm_Design_Phase
+from AACLE.Agents.Correctness_Verification_Phase import Correctness_Verification_Phase
+from AACLE.Agents.Complexity_Analysis_Phase import Complexity_Analysis_Phase
+from AACLE.Agents.Program_Execute_Phase import Program_Execute_Phase
 import sys
 sys.path.append("..")
 sys.path.append("../..")

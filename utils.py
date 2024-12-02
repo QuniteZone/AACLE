@@ -32,7 +32,7 @@ def get_project_root():
 
 
 def Check_file_exists(filename):
-    folder_path = os.path.join(get_project_root(), r'AutoLearing',filename)
+    folder_path = os.path.join(get_project_root(), r'AACLE',filename)
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
         print(f"文件夹'{folder_path}'已创建。")

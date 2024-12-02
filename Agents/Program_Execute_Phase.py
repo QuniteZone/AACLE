@@ -2,7 +2,7 @@ import os
 
 from autogen import ConversableAgent
 from autogen.coding import DockerCommandLineCodeExecutor
-from agent.Base_Agent import Base_Agent
+from AACLE.Agents.Base_Agent import Base_Agent
 
 
 class Program_Execute_Phase(Base_Agent):
@@ -26,6 +26,7 @@ class Program_Execute_Phase(Base_Agent):
             code_execution_config={"executor": executor},  # 使用本地命令行代码执行器.
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
         )
+
         # 定义代码编写代理的系统消息.
         code_writer_system_message = """You are a helpful AI assistant.
         Solve tasks using your coding and language skills.

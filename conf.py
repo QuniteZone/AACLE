@@ -19,11 +19,11 @@ question_input_format={
 }
 #输出格式
 question_output_format={
-"""返回一个正整数或-1"""
+    1:"""返回一个正整数或-1"""
 }
 #输入描述
 question_input_desc={
-
+    1:""
 }
 #输出描述
 question_output_desc={

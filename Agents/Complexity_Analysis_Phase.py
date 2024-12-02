@@ -1,8 +1,8 @@
 import os
 from typing import TypedDict
 from autogen import ConversableAgent
-from agent.Base_Agent import Base_Agent
-from utils import exact_json_from_text
+from AACLE.Agents.Base_Agent import Base_Agent
+from AACLE.utils import exact_json_from_text
 
 
 class CorrectnessResult(TypedDict):

@@ -1,6 +1,6 @@
 import os
 from autogen import ConversableAgent, GroupChat
-from agent.Base_Agent import Base_Agent
+from AACLE.Agents.Base_Agent import Base_Agent
 
 
 class Problem_Model_Phase(Base_Agent):
