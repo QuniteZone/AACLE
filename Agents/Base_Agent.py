@@ -1,3 +1,4 @@
+import json
 import os
 
 import autogen
@@ -6,7 +7,7 @@ from AACLE.conf import ModelAgent_system_message, AlgorithmSelectorAgent_system_
 
 
 class Base_Agent():
-    def __init__(self, model_file, temperature, work_dir):
+    def __init__(self, model, temperature, work_dir):
         "指定设定调用的LLM，保存目录"
         self.ModelAgent = None  # 1.ModelAgent：分析问题并生成数学建模描述。
         self.AlgorithmSelectorAgent = None  # 2.AlgorithmSelectorAgent：根据问题类型建议适用的算法和数据结构。
@@ -23,7 +24,7 @@ class Base_Agent():
 
         self.code_executor_agent = None
         self.code_writer_agent = None
-        self.model_file = model_file
+        self.model = model
         self.temperature= temperature # 指定设定调用LLM的温度参数
         self.work_dir = work_dir  # 保存目录
         self.task_id = None
@@ -32,6 +33,27 @@ class Base_Agent():
         os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
 
         self.def_agent() # 定义每个环节自己的代理
+
+    def load_json(self,text):
+        """
+        加载json，如果text中包含json代码块，则提取json代码块并加载
+        :param text:
+        :return:
+        """
+        try:
+            return json.loads(text)
+        except:
+            import re
+            json_pattern = re.compile(r"```(\s*json)?$(.*?)^```", re.MULTILINE | re.DOTALL)
+            matches = re.findall(json_pattern, text)
+            if len(matches) > 0:
+                text_json = matches[0][1].strip()
+            else:
+                assert False,"没有找到JSON代码块"
+            try:
+                return json.loads(text_json)
+            except:
+                assert False,"JSON解析错误"
 
     def def_agent(self):
         """
@@ -42,7 +64,7 @@ class Base_Agent():
         self.ModelAgent = ConversableAgent(
             name="ModelAgent",
             system_message=ModelAgent_system_message,
-            llm_config={"config_list": [{"model": self.model_file,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            llm_config={"config_list": [{"model": self.model,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
             # is_termination_msg=lambda msg: "terminate" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
             # max_consecutive_auto_reply=2,#  # 代理连续两次自动回复后，将停止自动回复
@@ -52,7 +74,7 @@ class Base_Agent():
         self.ModelAgent_discussion = ConversableAgent(
             name="ModelAgent_discussion",
             system_message=ModelAgent_system_message_discussion,
-            llm_config={"config_list": [{"model": self.model_file,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            llm_config={"config_list": [{"model": self.model,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
             # is_termination_msg=lambda msg: "terminate" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
             # max_consecutive_auto_reply=2,#  # 代理连续两次自动回复后，将停止自动回复
@@ -63,7 +85,7 @@ class Base_Agent():
         self.AlgorithmSelectorAgent = ConversableAgent(
             name="AlgorithmSelectorAgent",
             system_message=AlgorithmSelectorAgent_system_message,
-            llm_config={"config_list": [{"model": self.model_file,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            llm_config={"config_list": [{"model": self.model,"temperature":self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
             # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
@@ -74,7 +96,7 @@ class Base_Agent():
             name="AlgorithmSelectorAgent_discussion",
             system_message=AlgorithmSelectorAgent_system_message_discussion,
             llm_config={"config_list": [
-                {"model": self.model_file, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
             # is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
             # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
@@ -86,7 +108,7 @@ class Base_Agent():
             name="PseudocodeDesignerAgent",
             system_message=PseudocodeDesignerAgent_system_message,
             llm_config={"config_list": [
-                {"model": self.model_file, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
             # is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话
             # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
@@ -97,7 +119,7 @@ class Base_Agent():
             name="PseudocodeDesignerAgent_discussion",
             system_message=PseudocodeDesignerAgent_system_message_discussion,
             llm_config={"config_list": [
-                {"model": self.model_file, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
         )
 
@@ -118,7 +140,7 @@ class Base_Agent():
         self.AssistantAgent = ConversableAgent(
             name="Assistant",
             system_message=AssistantAgent_system_message,
-            llm_config={"config_list": [{"model": self.model_file, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            llm_config={"config_list": [{"model": self.model, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
             # max_consecutive_auto_reply=1,  # # 代理连续两次自动回复后，将停止自动回复
             is_termination_msg=lambda msg: "TERMINATE" in msg["content"],  # 如果检测到关键词“满意”，则终止对话

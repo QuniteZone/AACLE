@@ -7,8 +7,8 @@ from AACLE.Agents.Problem_Model_Phase import Problem_Model_Phase
 from AACLE.Agents.Algorithm_Selection_Phase import Algorithm_Selection_Phase
 from AACLE.Agents.Algorithm_Design_Phase import Algorithm_Design_Phase
 from AACLE.Agents.Correctness_Verification_Phase import Correctness_Verification_Phase
-from AACLE.Agents.Complexity_Analysis_Phase import Complexity_Analysis_Phase
-from AACLE.Agents.Program_Execute_Phase import Program_Execute_Phase
+# from AACLE.Agents.Complexity_Analysis_Phase import Complexity_Analysis_Phase
+# from AACLE.Agents.Program_Execute_Phase import Program_Execute_Phase
 import sys
 sys.path.append("..")
 sys.path.append("../..")
@@ -17,15 +17,15 @@ sys.path.append("../../../..")
 
 
 
-class AutoLearning():
-    def __init__(self, model_file,temperature, work_dir,bind_dir):
+class AACLE():
+    def __init__(self, model,temperature, work_dir,bind_dir):
         self.bind_dir=bind_dir #绑定所需本地数据的目录，有需要自己拉去
-        self.Problem_Model_Phase = Problem_Model_Phase(model_file, temperature,work_dir)  #创建问题建模阶段对象
-        self.Algorithm_Selection_Phase = Algorithm_Selection_Phase(model_file, temperature,work_dir) #创建算法选择阶段对象
-        self.Algorithm_Design_Phase = Algorithm_Design_Phase(model_file,temperature, work_dir) #创建算法设计阶段对象
-        self.Correctness_Verification_Phase = Correctness_Verification_Phase(model_file,temperature,  work_dir) #创建正确性验证阶段对象
-        self.Complexity_Analysis_Phase = Complexity_Analysis_Phase(model_file,temperature, work_dir) #创建复杂度分析阶段对象
-        self.Program_Execute_Phase = Program_Execute_Phase(model_file,temperature,  work_dir) #创建代码执行阶段对象
+        self.Problem_Model_Phase = Problem_Model_Phase(model, temperature,work_dir)  #创建问题建模阶段对象
+        self.Algorithm_Selection_Phase = Algorithm_Selection_Phase(model, temperature,work_dir) #创建算法选择阶段对象
+        self.Algorithm_Design_Phase = Algorithm_Design_Phase(model,temperature, work_dir) #创建算法设计阶段对象
+        self.Correctness_Verification_Phase = Correctness_Verification_Phase(model,temperature,  work_dir) #创建正确性验证阶段对象
+        # self.Complexity_Analysis_Phase = Complexity_Analysis_Phase(model,temperature, work_dir) #创建复杂度分析阶段对象
+        # self.Program_Execute_Phase = Program_Execute_Phase(model,temperature,  work_dir) #创建代码执行阶段对象
         self.task_id = None  # 保存任务id
 
         pass
@@ -35,11 +35,11 @@ class AutoLearning():
         ######################## 注意注意 前三个环节增加了智能体Agent自问自答环节 #######################
         self.is_satisfactory=False
         ####问题建模阶段
-        question_desc, key_question=self.Problem_Model_Phase.phase_run(task_id,task_message) #返回一个列表，第一个元素为最优建模，第二个元素为理解建模的应道问题
-        print(f"question_desc:{question_desc}")
-        print(f"key_question:{key_question}")
+        QueMath_desc, key_question1=self.Problem_Model_Phase.phase_run(task_id,task_message) #返回一个列表，第一个元素为最优建模，第二个元素为理解建模的应道问题
+        print(f"QueMath_desc:{QueMath_desc}")
+        print(f"key_question1:{key_question1}")
 
-
+        assert False,"主程序，环节一暂停"
 
         ####算法选择阶段
         question_desc = '''问题描述：在智能交通系统中，城市的道路网络可以表示为一个无向图，图中的每条边代表一条双向道路，边的权重代表车辆在该路段的行驶时间。系统需要计算两辆车从各自的起点出发前往目的地的最优行驶路径，使行驶时间最短。同时，当某些路段的行驶时间发生变化时，需要重新计算并更新这两辆车的最优路径及行驶时间。

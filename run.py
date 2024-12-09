@@ -28,9 +28,9 @@ Check_file_exists(need_dataset_filename)  #检查文件是否存在
 
 
 ####################### 以下为AutoLearning主程序调用 ##############
-from self_AutoGen import AutoLearning
+from self_AutoGen import AACLE
 error_list = []  # 记录错误的task_id
-autogen = AutoLearning(model_file=model,temperature=temperature,work_dir=output_filename,bind_dir=need_dataset_filename) #初始化AutoLearning
+autogen = AACLE(model=model,temperature=temperature,work_dir=output_filename,bind_dir=need_dataset_filename) #初始化AutoLearning
 
 for task_id in tasks_list.keys():
     print(f"########################Task {task_id}: 开始解决！########################")

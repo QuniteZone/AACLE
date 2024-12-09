@@ -1,8 +1,8 @@
 import os
 from typing import TypedDict
 from autogen import ConversableAgent
-from function import Base_Agent
-from utils import exact_json_from_text
+from AACLE.Agents import Base_Agent
+from AACLE.utils import exact_json_from_text
 
 
 class CorrectnessResult(TypedDict):
@@ -10,13 +10,13 @@ class CorrectnessResult(TypedDict):
     space_complexity: str
 
 
-class ComplexityAnalysisPhase(Base_Agent):
+class Complexity_Analysis_Phase(Base_Agent):
     """复杂度分析阶段"""
     result_json: CorrectnessResult
     result_text: str
 
-    def __init__(self, model_file, work_dir):
-        super().__init__(model_file, work_dir)
+    def __init__(self, model_file,temperature, work_dir):
+        super().__init__(model_file, temperature ,work_dir)
         # 创建一个Docker命令行代码执行器。
         self.user_agent = ConversableAgent(
             name="user_agent",

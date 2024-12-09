@@ -3,14 +3,14 @@ import os
 from autogen import ConversableAgent
 from autogen.coding import DockerCommandLineCodeExecutor
 
-from function import Base_Agent
+from AACLE.Agents import Base_Agent
 
 
-class ProgramExecutePhase(Base_Agent):
+class Program_Execute_Phase(Base_Agent):
     """代码执行阶段"""
 
-    def __init__(self, model_file, work_dir):
-        super().__init__(model_file, work_dir)
+    def __init__(self, model_file,temperature ,work_dir):
+        super().__init__(model_file,temperature, work_dir)
 
         # 创建一个Docker命令行代码执行器。
         executor = DockerCommandLineCodeExecutor(
