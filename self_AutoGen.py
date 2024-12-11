@@ -1,6 +1,7 @@
 import os
 import tempfile
 import autogen
+from anyio.abc import value
 from autogen import ConversableAgent
 from autogen.coding import LocalCommandLineCodeExecutor, DockerCommandLineCodeExecutor
 from AACLE.Agents.Problem_Model_Phase import Problem_Model_Phase
@@ -10,6 +11,9 @@ from AACLE.Agents.Correctness_Verification_Phase import Correctness_Verification
 # from AACLE.Agents.Complexity_Analysis_Phase import Complexity_Analysis_Phase
 # from AACLE.Agents.Program_Execute_Phase import Program_Execute_Phase
 import sys
+
+# from fontTools.misc.symfont import printGreenPen
+
 sys.path.append("..")
 sys.path.append("../..")
 sys.path.append("../../..")
@@ -34,10 +38,12 @@ class AACLE():
         self.task_id = task_id  # 保存任务id
         ######################## 注意注意 前三个环节增加了智能体Agent自问自答环节 #######################
         self.is_satisfactory=False
+
         ####问题建模阶段
         # QueMath_desc, key_question1=self.Problem_Model_Phase.phase_run(task_id,task_message) #第一个算法问题数学建模，第二个为辅助理解建模的问题
         # print(f"QueMath_desc:{QueMath_desc}")
         # print(f"key_question1:{key_question1}")
+
 
         ####算法选择阶段
         QueMath_desc={
@@ -71,19 +77,44 @@ class AACLE():
                        'answer2': '建议使用邻接表来表示图的结构是因为邻接表可以更高效地存储稀疏图的连接关系。邻接表由一个数组和链表组成，数组的每个元素对应一个节点，链表存储与该节点相邻的节点及边的信息。使用邻接表可以节省空间，因为只存储实际存在的边，而且可以更快地访问节点的邻居节点，提高算法效率。',
                        'problem_3': '你能进一步说明如何在Dijkstra算法的实现中添加对输入数据的合法性检查吗？这样的检查可以带来哪些好处？',
                        'answer3': '在Dijkstra算法的实现中，可以添加对输入数据的合法性检查，例如检查起点和终点是否在有效范围内，检查道路通行时间是否为非负数等。这样的检查可以避免程序在处理不合法输入时出现意外错误，提高程序的健壮性和可靠性，同时可以提前发现输入数据的问题，减少调试时间。'}
-        self.Algorithm_Design_Phase.phase_run(QueMath_desc,Algorithm_Select)
-        # 该环节输出，作为下一阶段的输入！
-
-
-
-        assert False, '测试之中'
+        # Algorithm_Select_list,key_question3=self.Algorithm_Design_Phase.phase_run(QueMath_desc,Algorithm_Select)
+        # print(f"Algorithm_Select_list:{Algorithm_Select_list}")
+        # print(f"key_question3:{key_question3}")
 
 
 
 
         ####正确性验证阶段
-        self.Correctness_Verification_Phase.phase_run()
-        # 该环节输出，作为下一阶段的输入！
+        Algorithm_Select_list=[
+            '1） 子问题定义：使用Dijkstra算法找到从起点到终点的最短通行时间。\n2） 根据Dijkstra算法的思想，每次选择当前距离最短的节点进行松弛操作，更新其他节点的距离，直到所有节点都被访问。\n    \\left. dist[v] = \\min\\left\\{dist[v], dist[u] + w(u, v)\\right\\}\\right.\n其中dist[v]表示起点到节点v的最短距离，w(u, v)表示节点u到节点v的边权重。\n3） 设交叉路口总数为N，起点编号为start，终点编号为end，被堵塞道路编号为blocked_road。\n4） 使用优先队列（Priority Queue）来维护当前最短路径的候选节点，以提高算法效率。',
+            '// 初始化距离数组，起点到各节点的距离初始为无穷大\nfor i ← 0 to N-1\n    do\n        dist[i] ← INF  // 表示无穷大\ndist[start] ← 0  // 起点到自身的距离为0\n\n// 使用优先队列实现Dijkstra算法\npriority_queue<Node> pq\npq.push(Node(start, 0))\n\nwhile pq is not empty\n    do\n        Node cur ← pq.top()\n        pq.pop()\n        \n        if cur.vertex == end\n            then return dist[end]  // 已找到终点的最短距离\n        \n        if cur.vertex == blocked_road\n            then continue  // 被堵塞道路不考虑\n        \n        for each neighbor of cur.vertex\n            do\n                if dist[cur.vertex] + w(cur.vertex, neighbor) < dist[neighbor]\n                    then\n                        dist[neighbor] ← dist[cur.vertex] + w(cur.vertex, neighbor)\n                        pq.push(Node(neighbor, dist[neighbor]))\n                        \nreturn -1  // 无法到达终点']
+        key_question3={'problem_1': '如何在算法中实现对输入数据的合法性检查？',
+                        'answer1': '在算法中实现对输入数据的合法性检查可以通过以下步骤：\n1. 在读取起点、终点和被堵塞道路编号后，检查它们是否在合法范围内（0到N-1）。\n2. 检查被堵塞道路编号是否在道路信息中存在，以确保输入的道路信息和被堵塞道路信息一致。\n3. 确保起点和终点不相同，避免出现起点和终点相同的情况。\n4. 如果输入数据不符合合法性要求，可以返回错误信息或采取其他处理方式。',
+                        'problem_2': '如何使用邻接表来表示图的结构以提高算法效率？',
+                        'answer2': '使用邻接表来表示图的结构可以提高算法效率，具体步骤如下：\n1. 创建一个数组，数组的每个元素是一个链表，链表中存储与该节点相邻的节点及对应的边权重。\n2. 遍历道路信息，将每条道路的起点、终点和权重信息存储到对应节点的链表中。\n3. 使用邻接表表示图的结构可以快速查找节点的邻居和对应的边权重，提高算法效率。',
+                        'problem_3': '如何利用STL中的priority_queue来优化算法，减少重复工作并提高效率？',
+                        'answer3': '利用STL中的priority_queue来优化算法可以通过以下方式：\n1. 定义一个自定义结构体Node，包含节点编号和距离信息，作为优先队列的元素。\n2. 将起点信息加入优先队列，并初始化起点到各节点的距禒为无穷大。\n3. 在每次取出距离最短的节点时，检查该节点是否已被访问，避免重复工作。\n4. 将更新后的节点信息加入优先队列，并更新距离数组。\n5. 使用STL中的priority_queue可以方便地实现优先队列的功能，减少手动维护队列的工作，提高算法效率。'}
+        VerificationAgent_list=self.Correctness_Verification_Phase.phase_run(QueMath_desc,Algorithm_Select_list)
+        VerificationCon,VerifiStrStautus=VerificationAgent_list[0],VerificationAgent_list[1]
+        if "成功" in VerifiStrStautus:
+            is_satisfactory=True
+        else:
+            is_satisfactory=False
+        # print(f"VerificationCon:{VerificationCon}")
+        # print(f"is_satisfactory:{is_satisfactory}")
+        # VerificationCon="""（算法正确性验证部分）
+        # 证明如下：（循环不变式法证明）
+        # 1、初始化：首先证明在第一次循环迭代之前（当pq为空时），循环不变式成立。此时，起点到起点的距离为0，其他节点的距离为无穷大，优先队列中只有起点； // 初始化距离数组和优先队列
+        # 2、保持：其次处理第二条性质：证明每次迭代保持循环不变式。在循环的每次迭代过程中，优先队列中始终存储当前最短路径的候选节点，并且更新节点的最短距离； // 更新节点的最短距离
+        # 3、终止：最后研究在循环终止时发生了什么。当优先队列为空时，表示所有节点都已被访问，如果终点被访问过，则返回起点到终点的最短距离，否则返回 - 1
+        # 表示无法到达终点。 // 处理终止条件"""
+        # VerifiStautus="成功"
+        # is_satisfactory=True
+
+
+
+
+        assert False, '测试之中'
 
         ####复杂度分析阶段
         # self.Complexity_Analysis_Phase.phase_run()
