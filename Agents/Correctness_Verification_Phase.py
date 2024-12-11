@@ -9,7 +9,7 @@ from AACLE.Agents.Base_Agent import Base_Agent
 class Correctness_Verification_Phase(Base_Agent):
     """正确性验证阶段"""
     def phase_run(self,QueMath_desc,Algorithm_Select_list):
-        prompt = f"""下面是我输入的算法内容描述和解题算法及结构，请你依据这些内容选择x来完成编写伪代码的任务！
+        prompt = f"""下面是我输入的算法内容描述和解题算法及结构，请你依据这些内容选择VerificationAgent来完成编写伪代码的任务！
                     算法内容描述：
                         problem_description: {QueMath_desc['problem_description']}
                         symbol_definition: {QueMath_desc['symbol_definition']}

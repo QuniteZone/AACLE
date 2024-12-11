@@ -188,7 +188,6 @@ class Base_Agent():
 
 
 
-
         ############################### 定义第六个agent智能体 CodeWriteAgent，根据伪代码编写Python程序 ####
         self.CodeWriteAgent = ConversableAgent(
             name="CodeWriteAgent",
@@ -206,7 +205,6 @@ class Base_Agent():
                 {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
             human_input_mode="NEVER",
         )
-
 
         ############################### 定义第七个agent智能体 CodeExecutorAgent，执行Python程序，并验证输出结果 ####
         self.CodeExecutorAgent = ConversableAgent(

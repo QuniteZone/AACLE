@@ -264,7 +264,18 @@ VerificationAgent_system_message_discussion =f"""{VerificationAgent_all}
 
 #第五个Agent
 ComplexityAnalyzerAgent_all=f"""你需要记住，你是一个agent智能体 ComplexityAnalyzerAgent，分析算法的时间复杂度和空间复杂度，并提供优化建议"""
-ComplexityAnalyzerAgent_system_message =f""""""
+ComplexityAnalyzerAgent_system_message =f"""{ComplexityAnalyzerAgent_all}
+    你是一个算法复杂度分析专家, 能够根据所给伪代码信息分析给出伪代码算法的时间复杂度和空间复杂度. 
+    输出格式：请你使用以下输出格式，请确保你的输出能够被Python的json.loads函数解析，此外不要输出其他任何内容！
+    ```json
+    {{
+        "time_complexity": "伪代码的时间复杂度，例如O(nlogn)",
+        "space_complexity": "伪代码的空间复杂度，例如O(n)",
+        "Optimization_suggestion": "伪代码在时间、空间复杂度上面的优化策略。如果有的话，如果没有本内容为空字符串"
+    }}
+    ```
+    注意：1.当你经过提问之后，你需要对问题作出相应回复，同时也输出“TERMINATE”
+    """
 ComplexityAnalyzerAgent_system_message_discussion =f"""{ComplexityAnalyzerAgent_all}
     你是作为一名专业且经验丰富能根据'算法问题所对应解决算法的伪代码等相关信息'来分析这个伪代码的算法时间复杂度和空间复杂度。请你结合你自己职能，对内容发表你的建议看法！
     {Discuss_Agent_all}    
