@@ -8,9 +8,12 @@ sys.path.append("..")
 sys.path.append("../..")
 
 
+
+
 ####################### 以下为配置信息，请根据需要修改 ##############
 
 tasks_list={}
+
 for question_id in question_id_list: #遍历所有问题，构造问题列表基本配置
     question_message={}
     question_message['question_desc']=question_desc[question_id]
@@ -24,6 +27,8 @@ for question_id in question_id_list: #遍历所有问题，构造问题列表基
 
 Check_file_exists(output_filename) #检查文件是否存在
 Check_file_exists(need_dataset_filename)  #检查文件是否存在
+
+
 
 
 

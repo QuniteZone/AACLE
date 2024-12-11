@@ -47,7 +47,7 @@ class Algorithm_Selection_Phase(Base_Agent):
             if result['name']=='AlgorithmSelectorAgent':
                 AlgorithmAgent_ResultData.append(result['content'])
         if len(AlgorithmAgent_ResultData)<3:
-            assert False,"环节一未成功完成，请检查相关对话排错！"
+            assert False,"环节二未成功完成，请检查相关对话排错！"
         Algorithm_Select, key_question = self.load_json(AlgorithmAgent_ResultData[1]), self.load_json(AlgorithmAgent_ResultData[2])
 
 
