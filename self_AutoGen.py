@@ -114,7 +114,7 @@ class AACLE():
 
 
         # ####环节六：代码执行阶段（根据设计的算法，编写运行实际代码）
-        self.Program_Execute_Phase.phase_run(QueMath_desc,Algorithm_Design_list)
+        # self.Program_Execute_Phase.phase_run(QueMath_desc,Algorithm_Design_list)
         #具体代码文件见所设置保存目录
 
         all_KeyQuestion=[key_question1,key_question2,key_question3] #前三个环节的所有提问内容
@@ -126,4 +126,3 @@ class AACLE():
             "ComplexityAnalyzerResult":ComplexityAnalyzerResult
         }
         return all_result,all_KeyQuestion
-
