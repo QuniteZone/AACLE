@@ -14,7 +14,8 @@ class Algorithm_Selection_Phase(Base_Agent):
                         3. mathematical_expression：{task_message['mathematical_expression']}
                         4. input_format：{task_message['input_format']}
                         5. input_example：{task_message['input_example']}
-                        6. output_format：{task_message['output_format']}"""
+                        6. output_example: {task_message['output_example']}
+                        7. output_format：{task_message['output_format']}"""
 
         allowed_transitions = {
             self.AlgorithmSelectorAgent: [self.PseudocodeDesignerAgent_discussion, self.AssistantAgent],

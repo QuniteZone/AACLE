@@ -1,20 +1,10 @@
-import os
-import tempfile
-import autogen
-from anyio.abc import value
-from autogen import ConversableAgent
-from autogen.coding import LocalCommandLineCodeExecutor, DockerCommandLineCodeExecutor
 from AACLE.Agents.Problem_Model_Phase import Problem_Model_Phase
 from AACLE.Agents.Algorithm_Selection_Phase import Algorithm_Selection_Phase
 from AACLE.Agents.Algorithm_Design_Phase import Algorithm_Design_Phase
 from AACLE.Agents.Correctness_Verification_Phase import Correctness_Verification_Phase
 from AACLE.Agents.Complexity_Analysis_Phase import Complexity_Analysis_Phase
-# from AACLE.Agents.Program_Execute_Phase import Program_Execute_Phase
+from AACLE.Agents.Program_Execute_Phase import Program_Execute_Phase
 import sys
-
-from pandas.core.dtypes.inference import is_float
-
-# from fontTools.misc.symfont import printGreenPen
 
 sys.path.append("..")
 sys.path.append("../..")
@@ -31,7 +21,7 @@ class AACLE():
         self.Algorithm_Design_Phase = Algorithm_Design_Phase(model,temperature, work_dir) #创建算法设计阶段对象
         self.Correctness_Verification_Phase = Correctness_Verification_Phase(model,temperature,  work_dir) #创建正确性验证阶段对象
         self.Complexity_Analysis_Phase = Complexity_Analysis_Phase(model,temperature,  work_dir) #创建复杂度分析阶段对象
-        # self.Program_Execute_Phase = Program_Execute_Phase(model,temperature,  work_dir) #创建代码执行阶段对象
+        self.Program_Execute_Phase = Program_Execute_Phase(model,temperature,  work_dir) #创建代码执行阶段对象
         self.task_id = None  # 保存任务id
 
         pass
@@ -41,21 +31,23 @@ class AACLE():
         ######################## 注意注意 前三个环节增加了智能体Agent自问自答环节 #######################
         self.is_satisfactory=True
 
+        QueMath_desc=None #环节一的算法数学基本描述
         Algorithm_Design_list=None #环节三伪代码设计结果
         while self.is_satisfactory: #前四个环节不断重复迭代，直至成功
-            ####问题建模阶段
+            ####环节一：问题建模阶段（用数学符号和公式抽象地描述问题）
             # QueMath_desc, key_question1=self.Problem_Model_Phase.phase_run(task_id,task_message) #第一个算法问题数学建模，第二个为辅助理解建模的问题
             # print(f"QueMath_desc:{QueMath_desc}")
             # print(f"key_question1:{key_question1}")
 
 
-            ####算法选择阶段
+            ####环节二：算法选择阶段（根据问题特性，确定合适的算法和数据结构。）
             QueMath_desc={
                 'problem_description': '一个城市的交通网络由多个交叉路口和道路组成。由于某条主要道路发生了交通堵塞，你需要找到从你的起点到目的地的最短绕行时间。',
                 'symbol_definition': 'N表示交叉路口的总数，编号为0到n-1。每行包含三个整数u v w，表示从交叉路口u到交叉路口v的道路通行时间为w。blocked_road表示被堵塞道路在输入中的编号，start表示起点的编号，end表示终点的编号。',
                 'mathematical_expression': '找到从起点到终点的最短通行时间，如果无法到达终点，返回-1。可以使用Dijkstra算法来解决，该算法适用于解决单源最短路径问题。在实现Dijkstra算法时，使用优先队列（Priority Queue）来维护当前最短路径的候选节点，以提高算法效率。',
                 'input_format': '输入的第一行为一个整数N，表示交叉路口的总数，编号为0到n-1。接下来若干行，每行包含三个整数u v w，表示从交叉路口u到交叉路口v的道路通行时间为w。倒数第3行：一个整数blocked_road，表示被堵塞道路在输入中的编号（从0开始编号）。倒数第2行：一个整数start，表示起点的编号。最后一行：一个整数end，表示终点的编号。',
                 'input_example': "['5\\n0 1 4\\n1 2 3\\n0 3 2\\n3 4 6\\n2 4 5\\n1\\n0\\n4']",
+                'output_example': "['9']",
                 'output_format': '返回一个正整数或-1'}
             key_question1={
                 'problem_1': '在使用Dijkstra算法解决最短路径问题时，为什么选择使用优先队列（Priority Queue）来维护当前最短路径的候选节点？优先队列相对于普通队列的优势是什么？',
@@ -68,7 +60,7 @@ class AACLE():
 
 
 
-            ####算法设计阶段
+            ####环节三：算法设计阶段（用伪代码详细设计算法步骤和逻辑）
             Algorithm_Select={'data_structure': '优先队列（Priority Queue）',
                                'data_structure_example': 'struct Node { int vertex; int distance; };',
                                'data_structure_reason': '选择优先队列来维护当前最短路径的候选节点，因为Dijkstra算法需要不断更新最短路径，优先队列可以高效地找到当前最短路径的候选节点。',
@@ -87,7 +79,7 @@ class AACLE():
 
 
 
-            ####正确性验证阶段
+            ####环节四：正确性验证阶段（通过数学推导（如归纳法）证明算法的正确性）
             Algorithm_Design_list=[
                 '1） 子问题定义：使用Dijkstra算法找到从起点到终点的最短通行时间。\n2） 根据Dijkstra算法的思想，每次选择当前距离最短的节点进行松弛操作，更新其他节点的距离，直到所有节点都被访问。\n    \\left. dist[v] = \\min\\left\\{dist[v], dist[u] + w(u, v)\\right\\}\\right.\n其中dist[v]表示起点到节点v的最短距离，w(u, v)表示节点u到节点v的边权重。\n3） 设交叉路口总数为N，起点编号为start，终点编号为end，被堵塞道路编号为blocked_road。\n4） 使用优先队列（Priority Queue）来维护当前最短路径的候选节点，以提高算法效率。',
                 '// 初始化距离数组，起点到各节点的距离初始为无穷大\nfor i ← 0 to N-1\n    do\n        dist[i] ← INF  // 表示无穷大\ndist[start] ← 0  // 起点到自身的距离为0\n\n// 使用优先队列实现Dijkstra算法\npriority_queue<Node> pq\npq.push(Node(start, 0))\n\nwhile pq is not empty\n    do\n        Node cur ← pq.top()\n        pq.pop()\n        \n        if cur.vertex == end\n            then return dist[end]  // 已找到终点的最短距离\n        \n        if cur.vertex == blocked_road\n            then continue  // 被堵塞道路不考虑\n        \n        for each neighbor of cur.vertex\n            do\n                if dist[cur.vertex] + w(cur.vertex, neighbor) < dist[neighbor]\n                    then\n                        dist[neighbor] ← dist[cur.vertex] + w(cur.vertex, neighbor)\n                        pq.push(Node(neighbor, dist[neighbor]))\n                        \nreturn -1  // 无法到达终点']
@@ -105,30 +97,33 @@ class AACLE():
             #     self.is_satisfactory=True #如果验证失败，则说明算法不正确，需要重新设计算法
             # print(f"VerificationCon:{VerificationCon}")
             # print(f"self.is_satisfactory:{self.is_satisfactory}")
-            # VerificationCon="""（算法正确性验证部分）
-            # 证明如下：（循环不变式法证明）
-            # 1、初始化：首先证明在第一次循环迭代之前（当pq为空时），循环不变式成立。此时，起点到起点的距离为0，其他节点的距离为无穷大，优先队列中只有起点； // 初始化距离数组和优先队列
-            # 2、保持：其次处理第二条性质：证明每次迭代保持循环不变式。在循环的每次迭代过程中，优先队列中始终存储当前最短路径的候选节点，并且更新节点的最短距离； // 更新节点的最短距离
-            # 3、终止：最后研究在循环终止时发生了什么。当优先队列为空时，表示所有节点都已被访问，如果终点被访问过，则返回起点到终点的最短距离，否则返回 - 1
-            # 表示无法到达终点。 // 处理终止条件"""
+            VerificationCon=f"""证明如下：（循环不变式法证明）
+            1、初始化：首先证明在第一次循环迭代之前（当pq为空时），循环不变式成立。此时，起点到起点的距离为0，其他节点的距离为无穷大，优先队列中只有起点； // 初始化距离数组和优先队列
+            2、保持：其次处理第二条性质：证明每次迭代保持循环不变式。在循环的每次迭代过程中，优先队列中始终存储当前最短路径的候选节点，并且更新节点的最短距离； // 更新节点的最短距离
+            3、终止：最后研究在循环终止时发生了什么。当优先队列为空时，表示所有节点都已被访问，如果终点被访问过，则返回起点到终点的最短距离，否则返回 - 1
+            表示无法到达终点。 // 处理终止条件"""
             # VerifiStautus="成功"
-            # self.is_satisfactory=True
-
-            self.is_satisfactory = False
-
-
-        ####复杂度分析阶段
-        self.Complexity_Analysis_Phase.phase_run(Algorithm_Design_list)
-        # # 该环节输出，作为下一阶段的输入！
-
-
-        assert False, '测试之中'
-
-        # ####代码执行阶段
-        # self.Program_Execute_Phase.phase_run()
+            self.is_satisfactory=False
 
 
 
-        final_result="最终输出结果"
-        return final_result
+        ####环节五：复杂度分析阶段（评估算法的时间和空间复杂度。）
+        # ComplexityAnalyzerResult=self.Complexity_Analysis_Phase.phase_run(Algorithm_Design_list)
+        ComplexityAnalyzerResult= {'time_complexity': 'O((V + E)logV)', 'space_complexity': 'O(V)',
+                                   'Optimization_suggestion': '对于稀疏图，可以考虑使用Dijkstra算法的变种A*算法来进一步优化时间复杂度。'}
+
+
+        # ####环节六：代码执行阶段（根据设计的算法，编写运行实际代码）
+        self.Program_Execute_Phase.phase_run(QueMath_desc,Algorithm_Design_list)
+        #具体代码文件见所设置保存目录
+
+        all_KeyQuestion=[key_question1,key_question2,key_question3] #前三个环节的所有提问内容
+        all_result={
+            "QueMath_desc":QueMath_desc,
+            "Algorithm_Select":Algorithm_Select,
+            "Algorithm_Design_list":Algorithm_Design_list,
+            "VerificationCon":VerificationCon,
+            "ComplexityAnalyzerResult":ComplexityAnalyzerResult
+        }
+        return all_result,all_KeyQuestion
 

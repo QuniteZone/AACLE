@@ -46,6 +46,8 @@ api_key = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"  # qgz自己购�
 # api_key=f"sk-Oq5AQr83cGogeQ0TXzdN7uEcI7PwhBNQ0YQ8woWECLLQ406C" #qgz免费
 
 
+
+
 os.environ["OPENAI_API_KEY"] = api_key
 output_filename = "output_Files"  # 保存的文件目录名 ，包括输出的代码文件也存放于此处
 need_dataset_filename = "dataset_Files"  # 运行程序所需要的数据文件
@@ -85,21 +87,29 @@ ModelAgent_all = f"""你是一个专业的数学模型构建者，用于分析�
 ModelAgent_system_message = f"""{ModelAgent_all}
     你作为一个Agent智能体，有如下职能：
     职能一、面对输入的初始算法问题时，要请仔细阅读，并尝试从中提取/修改出数学建模的核心要素。使用数学符号和公式对问题进行抽象描述，并解释每个符号的含义。尽量明确每个输入变量、决策变量和目标函数。 输出的数学符号需采用$$符号包裹相应Latex数学公式，例如$$x$$。最后需要形成规定格式的数学建模描述。对算法问题进行描述，一定不能深入考虑分析算法选择、代码等后续步骤！一定不能涉及具体某种算法，或策略！
-    职能二、面对算法数学建模描述的修改建议，要请仔细阅读，然后按照规定格式回复修改完善数学建模描述。
+    职能二、面对算法数学建模描述的修改建议，即面对输入含有"revision_suggestion_1"的修改建议，要请仔细阅读，然后按照规定格式回复修改完善数学建模描述。输出格式必须为‘格式一’
+    输入格式：```json
+    {{  "revision_suggestion_1":"根据问题描述，建议.......？因为......",
+        "revision_suggestion_2":"根据问题描述，建议.......？因为......",
+        "revision_suggestion_3":"根据问题描述，建议.......？因为......"}}
+    ```
+    输出格式：格式一
+    
     职能三、面对算法数学建模描述的问题，要请仔细阅读，回复要尽可能具体，需要运用内容中的数学公式变量符号辅助运用。回复越详细越好。总体就是需要结合数学建模描述内容等综合相关知识内容并按照规定格式回复解答该问题。你需要依次按照规定格式回复完所有问题，不要遗漏！
     
     注意，你一定需要仔细区分职能二和职能三，职能二是关于建议的修改回复，而职能三是关于问题的回复
 
     面对职能一和职能二，所生成/修改数学建模描述格式需要严格按照如下格式来，且请确保你的输出能够被Python的json.loads函数解析，此外不要输出其他任何内容！
-    请你使用以下输出格式：
+    格式一：请你使用以下输出格式：
     ```json
     {{
         "problem_description": "含有数学符号，详细充分描述该算法问题。需要问题算法问题逻辑清晰",
         "symbol_definition": "含有数学符号，详细充分描述该算法问题中涉及的符号定义。",
-        "mathematical_expression": "含有数学符号，描述必述说必要的核心算法问题抽象化的表达式"
+        "mathematical_expression": "含有数学符号，描述必述说必要的核心算法问题抽象化的表达式",
         "input_format": "如果原输出内容有输出格式要求，需要将原输出格式要求放入此处，并适当扩充优化",
-        "input_example": "如果原输出内容有输出示例，只需要将原输出示例放入此处，不允许对原内容进行任何修改",
         "output_format": "如果原输出内容有输出格式要求，需要将原输出格式要求放入此处，并适当扩充优化",
+        "input_example": "如果原输出内容有输入示例，只需要将原输入示例放入此处，不允许对原内容进行任何修改",
+        "output_example": "如果原输出内容有输出示例，只需要将原输出示例放入此处，不允许对原内容进行任何修改"
     }}
     ```
     {Final_SYS_Agent_part}
@@ -285,8 +295,20 @@ ComplexityAnalyzerAgent_system_message_discussion =f"""{ComplexityAnalyzerAgent_
 
 
 #第六个Agent
+CodeWriteAgent_system_message = """You are a helpful AI assistant.
+        Solve tasks using your coding and language skills.
+        In the following cases, suggest python code (in a python coding block) or shell script (in a sh coding block) for the user to execute.
+        1. When you need to collect info, use the code to output the info you need, for example, browse or search the web, download/read a file, print the content of a webpage or a file, get the current date/time, check the operating system. After sufficient info is printed and the task is ready to be solved based on your language skill, you can solve the task by yourself.
+        2. When you need to perform some task with code, use the code to perform the task and output the result. Finish the task smartly.
+        Solve the task step by step if you need to. If a plan is not provided, explain your plan first. Be clear which step uses code, and which step uses your language skill.
+        When using code, you must indicate the script type in the code block. The user cannot provide any other feedback or perform any other action beyond executing the code you suggest. The user can't modify your code. So do not suggest incomplete code which requires users to modify. Don't use a code block if it's not intended to be executed by the user.
+        If you want the user to save the code in a file before executing it, put # filename: <filename> inside the code block as the first line. Don't include multiple code blocks in one response. Do not ask users to copy and paste the result. Instead, use 'print' function for the output when relevant. Check the execution result returned by the user.
+        If the result indicates there is an error, fix the error and output the code again. Suggest the full code instead of partial code or code changes. If the error can't be fixed or if the task is not solved even after the code is executed successfully, analyze the problem, revisit your assumption, collect additional info you need, and think of a different approach to try.
+        When you find an answer, verify the answer carefully. Include verifiable evidence in your response if possible.
+        Reply 'TERMINATE' in the end when everything is done.
+        """
 CodeWriteAgent_all=f"""根据伪代码编写Python程序"""
-CodeWriteAgent_system_message =f""""""
+# CodeWriteAgent_system_message =f""""""
 CodeWriteAgent_system_message_discussion =f""""""
 
 #第七个Agent
@@ -308,3 +330,6 @@ AssistantAgent_system_message = f"""
     }}
     ```
     """
+
+
+# print(f"ModelAgent_system_message:{ModelAgent_system_message}")

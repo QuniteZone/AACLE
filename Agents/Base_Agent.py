@@ -11,6 +11,7 @@ from AACLE.conf import ModelAgent_system_message, AlgorithmSelectorAgent_system_
     ComplexityAnalyzerAgent_system_message, ComplexityAnalyzerAgent_system_message_discussion, \
     CodeWriteAgent_system_message, CodeWriteAgent_system_message_discussion, CodeExecutorAgent_system_message, \
     CodeExecutorAgent_system_message_discussion
+from autogen.coding import DockerCommandLineCodeExecutor
 
 
 class Base_Agent():
@@ -21,8 +22,8 @@ class Base_Agent():
         self.PseudocodeDesignerAgent = None  # 3.PseudocodeDesignerAgent：根据算法选择，编写对应的伪代码。
         self.VerificationAgent = None  # 4.VerificationAgent：验证伪代码的正确性，通过数学推导或逻辑推理确保算法逻辑无误。
         self.ComplexityAnalyzerAgent = None  # 5.ComplexityAnalyzerAgent：分析算法的时间复杂度和空间复杂度，并提供优化建议。
-        self.CodeExecutorAgent = None  # 6.CodeExecutorAgent：根据伪代码编写Python程序
-        self.CodeWriteAgent = None  # 7.CodeWriteAgent：执行Python程序，并验证输出结果。
+        self.CodeWriteAgent = None  # 6.CodeWriteAgent：执行Python程序，并验证输出结果。
+        self.CodeExecutorAgent = None  # 7.CodeExecutorAgent：根据伪代码编写Python程序
         self.AssistantAgent = None  # 8.AssistantAgent：在前三个环节结束后，向环节主Agent提出针对性问题，同时问题需与具体环节内容紧密相关，并避免空泛提问。
 
         self.ModelAgent_discussion = None  # ModelAgent_discussion：作为一个用于参与讨论的ModelAgent
@@ -37,7 +38,9 @@ class Base_Agent():
         self.task_id = None
         os.environ["http_proxy"] = "http://localhost:7890"
         os.environ["https_proxy"] = "http://localhost:7890"
-        os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1"
+        os.environ["OPENAI_BASE_URL"] = "https://api.chatanywhere.org/v1" #第三方 openai baseURL
+        # os.environ["OPENAI_BASE_URL"] = "https://dashscope.aliyuncs.com/compatible-mode/v1"  # QWen的baseURL
+
 
         self.def_agent() # 定义每个环节自己的代理
 
@@ -65,6 +68,7 @@ class Base_Agent():
         except:
 
             json_pattern = re.compile(r"```(\s*json)?$(.*?)^```", re.MULTILINE | re.DOTALL)
+            # json_pattern = re.compile(r"```json\n(.*?)\n```", re.MULTILINE | re.DOTALL)
             matches = re.findall(json_pattern, text)
             if len(matches) > 0:
                 text_json = matches[0][1].strip()
@@ -72,7 +76,7 @@ class Base_Agent():
                 assert False,"没有找到JSON代码块"
             try:
                 return json.loads(text_json)
-            except:
+            except :
                 assert False,"JSON解析错误"
 
     def def_agent(self):
@@ -189,40 +193,35 @@ class Base_Agent():
 
 
         ############################### 定义第六个agent智能体 CodeWriteAgent，根据伪代码编写Python程序 ####
-        self.CodeWriteAgent = ConversableAgent(
-            name="CodeWriteAgent",
+        self.code_writer_agent = ConversableAgent(
+            "code_writer_agent",
             system_message=CodeWriteAgent_system_message,
-            llm_config={"config_list": [
-                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
+            llm_config={"config_list": [{"model": self.model, "api_key": os.environ["OPENAI_API_KEY"] }]},
+            code_execution_config=False,  # 为此代理关闭代码执行.
             human_input_mode="NEVER",
         )
 
-        ##### 定义第六个agent智能体 CodeWriteAgent_discussion，作为一个用于参与讨论的 CodeWriteAgent ####
-        self.CodeWriteAgent_discussion = ConversableAgent(
-            name="CodeWriteAgent_discussion",
-            system_message=CodeWriteAgent_system_message_discussion,
-            llm_config={"config_list": [
-                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
-            human_input_mode="NEVER",
-        )
 
         ############################### 定义第七个agent智能体 CodeExecutorAgent，执行Python程序，并验证输出结果 ####
-        self.CodeExecutorAgent = ConversableAgent(
-            name="CodeExecutorAgent",
-            system_message=CodeExecutorAgent_system_message,
-            llm_config={"config_list": [
-                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
-            human_input_mode="NEVER",
+        # 创建一个Docker命令行代码执行器。
+        executor = DockerCommandLineCodeExecutor(
+            image="python_3.9:3.9",  # 使用给定的docker镜像名称执行代码。
+            timeout=10,  # 每次代码执行的超时时间（秒）。
+            # work_dir=temp_dir.name,  # 使用临时目录存储代码文件。
+            # work_dir="save_DataFile/_qgz_output_file"
+            work_dir=f"{self.work_dir}"#使用指定目录存储代码文件
         )
 
-        ##### 定义第七个agent智能体 CodeExecutorAgent_discussion，作为一个用于参与讨论的 CodeExecutorAgent ####
-        self.CodeExecutorAgent_discussion = ConversableAgent(
-            name="CodeExecutorAgent_discussion",
-            system_message=CodeExecutorAgent_system_message_discussion,
-            llm_config={"config_list": [
-                {"model": self.model, "temperature": self.temperature, "api_key": os.environ["OPENAI_API_KEY"]}]},
-            human_input_mode="NEVER",
+        # 创建一个带有代码执行器配置的代理.
+        self.code_executor_agent = ConversableAgent(
+            "code_executor_agent",
+            llm_config=False,  # 为此代理关闭LLM.
+            code_execution_config={"executor": executor},  # 使用本地命令行代码执行器.
+            human_input_mode="NEVER",  # 为此代理从不接受人类输入以进行安全操作.
         )
+
+
+
 
         ############################### 定义第八个agent智能体 AssistantAgent，在前三个环节结束后，向环节主Agent提出针对性问题，同时问题需与具体环节内容紧密相关，并避免空泛提问 ####
         self.AssistantAgent = ConversableAgent(

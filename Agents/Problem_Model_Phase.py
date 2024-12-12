@@ -53,7 +53,10 @@ class Problem_Model_Phase(Base_Agent):
         if len(ModelAgent_ResultData)<3:
             assert False,"环节一未成功完成，请检查相关对话排错！"
 
-        QueMath_desc, key_question= self.load_json(ModelAgent_ResultData[1]), self.load_json(ModelAgent_ResultData[2])
+
+        print(f"ModelAgent_ResultData:{ModelAgent_ResultData[1]}")
+        QueMath_desc= self.load_json(ModelAgent_ResultData[1])
+        key_question = self.load_json(ModelAgent_ResultData[2])
 
         print(f"########################################## 环节一已成功结束 ##########################################")
         # print(f"QueMath_desc:{QueMath_desc}")

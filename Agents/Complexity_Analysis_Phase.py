@@ -1,11 +1,10 @@
 from AACLE.Agents.Base_Agent import Base_Agent
 
-
 class Complexity_Analysis_Phase(Base_Agent):
     """正确性验证阶段"""
     def phase_run(self, Algorithm_Design_list):
         """复杂度分析阶段"""
-        prompt = f"""下面是我输入的算法内容描述和解题算法及结构，请你依据这些内容完成伪代码的时间、空间复杂度分析任务！
+        prompt = f"""下面是输入的算法内容描述和解题算法及结构，请你依据这些内容完成伪代码的时间、空间复杂度分析任务！
             算法选择：
                 BaseInfo: {Algorithm_Design_list[0]}
                 Pseudocode: {Algorithm_Design_list[1]}
@@ -28,6 +27,8 @@ class Complexity_Analysis_Phase(Base_Agent):
         ComplexityAnalyzerResult = self.load_json(ComplexityAnalyzerAgent_ResultData[-1])
 
         print(f"########################################## 环节五已成功结束 ##########################################")
-        print(f"ComplexityAnalyzerResult: {ComplexityAnalyzerResult}")
+        # print(f"ComplexityAnalyzerResult: {ComplexityAnalyzerResult}")
+        # ComplexityAnalyzerResult={'time_complexity': 'O((V + E)logV)', 'space_complexity': 'O(V)',
+        #                            'Optimization_suggestion': '对于稀疏图，可以考虑使用Dijkstra算法的变种A*算法来进一步优化时间复杂度。'}
 
-        assert False,"暂时终止！！！"
+        return ComplexityAnalyzerResult

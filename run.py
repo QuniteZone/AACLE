@@ -7,13 +7,8 @@ import sys
 sys.path.append("..")
 sys.path.append("../..")
 
-
-
-
 ####################### 以下为配置信息，请根据需要修改 ##############
-
 tasks_list={}
-
 for question_id in question_id_list: #遍历所有问题，构造问题列表基本配置
     question_message={}
     question_message['question_desc']=question_desc[question_id]
@@ -39,15 +34,10 @@ autogen = AACLE(model=model,temperature=temperature,work_dir=output_filename,bin
 
 for task_id in tasks_list.keys():
     print(f"########################Task {task_id}: 开始解决！########################")
-    result = autogen.run(task_id, tasks_list[task_id])
-    print(f'result:{result}')
-    # try:
-    #     print(f"tasks_list[task_id]:{tasks_list[task_id]}")
-    #     result=autogen.run(task_id, tasks_list[task_id])
-    #     print(f'result:{result}')
-    # except Exception as e:
-    #     print(f'    Task {task_id} 执行失败，错误信息：{e}')
-    #     error_list.append(task_id)
-print(f"######################## 所有任务执行完毕！ ########################\n")
-print(f"执行失败的task_id有：{error_list}")
+    all_result,all_KeyQuestion = autogen.run(task_id, tasks_list[task_id])
+    print(f"########################Task {task_id}: 结束解决！########################")
+    print(f"all_result:{all_result}")
+    print(f"all_KeyQuestion:{all_KeyQuestion}")
+
+
 

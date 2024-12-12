@@ -16,6 +16,7 @@ class Correctness_Verification_Phase(Base_Agent):
                         mathematical_expression: {QueMath_desc['mathematical_expression']}
                         input_format:{QueMath_desc['input_format']}
                         input_example: {QueMath_desc['input_example']}
+                        output_example: {QueMath_desc['output_example']}
                         output_format:{QueMath_desc['output_format']}
 
                     算法选择：
