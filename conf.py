@@ -41,9 +41,7 @@ question_output_example = {
 model ='gpt-3.5-turbo-0125'
 # model = "gpt-4"
 temperature = 0
-# api_key = "sk-0lFrTwWzGm9oT3YCJCMAPAb2Q4UY2q5f7pCXfWsoPLl0ZVj7"  # zsd 购买
-api_key = "sk-FUFiwSHFPr9S3ofp9kGjV17GoHYS3o1Ie3ekXwmsQgUaJO5i"  # qgz自己购买
-# api_key=f"sk-Oq5AQr83cGogeQ0TXzdN7uEcI7PwhBNQ0YQ8woWECLLQ406C" #qgz免费
+api_key = "  "  # qgz自己购买
 
 
 
